@@ -53,8 +53,7 @@ export const Footer: React.FC<Props> = ({
               selected: currentFilter === filter,
             })}
             data-cy={FILTER_DATA_CY[filter]}
-            onClick={event => {
-              event.preventDefault();
+            onClick={() => {
               onFilterChange(filter);
             }}
           >

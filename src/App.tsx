@@ -49,10 +49,25 @@ const getVisibleTodos = (todos: Todo[], filter: FilterStatus) => {
   }
 };
 
+const getFilterFromHash = (): FilterStatus => {
+  const hash = window.location.hash.replace(/^#\/?/, '');
+
+  switch (hash) {
+    case FILTERS.ACTIVE:
+      return FILTERS.ACTIVE;
+
+    case FILTERS.COMPLETED:
+      return FILTERS.COMPLETED;
+
+    default:
+      return FILTERS.ALL;
+  }
+};
+
 export const App: React.FC = () => {
   const userId = getUserId();
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [filter, setFilter] = useState<FilterStatus>(FILTERS.ALL);
+  const [filter, setFilter] = useState<FilterStatus>(getFilterFromHash);
   const [newTitle, setNewTitle] = useState('');
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
@@ -141,6 +156,18 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     newTodoFieldRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setFilter(getFilterFromHash());
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
   }, []);
 
   useEffect(
@@ -288,6 +315,10 @@ export const App: React.FC = () => {
       setTodos(currentTodos =>
         currentTodos.filter(todo => !deletedTodoIds.includes(todo.id)),
       );
+
+      if (editingTodoId !== null && deletedTodoIds.includes(editingTodoId)) {
+        closeTodoEditor();
+      }
     }
 
     completedTodoIds.forEach(removeLoadingTodo);
